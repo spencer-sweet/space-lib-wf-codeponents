@@ -1,0 +1,18 @@
+.simple-card {
+  width: min(360px, 100%);
+  border-radius: 14px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.simple-card h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.simple-card p {
+  margin: 0.5rem 0 0;
+  color: #4b5563;
+}
