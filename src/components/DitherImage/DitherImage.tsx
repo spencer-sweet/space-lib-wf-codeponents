@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type DitherImageProps = {
+  image?: { src: string; alt?: string };
   src?: string | { src?: string; alt?: string };
   dither?: number;
   backgroundColor?: string;
@@ -55,10 +56,48 @@ function hexToRgb(hex: string) {
   ] as const;
 }
 
+function isPlaceholderAsset(src: string | undefined) {
+  if (!src) return true;
+  const normalized = src.trim().toLowerCase();
+  if (!normalized) return true;
+  return (
+    normalized.includes("placeholder.svg") ||
+    normalized.includes("/placeholder") ||
+    normalized.includes("placeholder-image") ||
+    normalized.includes("image_placeholder")
+  );
+}
+
+function isLikelyRenderableAsset(src: string | undefined) {
+  if (!src) return false;
+  const normalized = src.trim().toLowerCase();
+  if (!normalized) return false;
+  return (
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("data:") ||
+    normalized.startsWith("blob:")
+  );
+}
+
+function pickImageSource(
+  imageSrc: string | undefined,
+  fallbackSrc: string | undefined
+) {
+  const hasFallback = Boolean(fallbackSrc?.trim());
+  const hasRealImage =
+    !isPlaceholderAsset(imageSrc) && isLikelyRenderableAsset(imageSrc);
+
+  if (hasRealImage) return imageSrc;
+  if (hasFallback) return fallbackSrc;
+  return imageSrc;
+}
+
 /**
  * DitherImage
  *
  * Props:
+ *   image           - Webflow Image prop ({ src, alt }); preferred when present
  *   src             - image URL (supports crossOrigin: anonymous)
  *   dither          - 0-100, controls Floyd-Steinberg spread (default 97)
  *   backgroundColor - hex color behind the dithered layer (default #000000)
@@ -68,6 +107,7 @@ function hexToRgb(hex: string) {
  * with object-fit: cover semantics.
  */
 export function DitherImage({
+  image,
   src,
   dither = 97,
   backgroundColor = "#000000",
@@ -123,7 +163,8 @@ export function DitherImage({
 
   // Load source image whenever src changes.
   useEffect(() => {
-    const imageSrc = typeof src === "string" ? src : src?.src;
+    const fallbackSrc = typeof src === "string" ? src : src?.src;
+    const imageSrc = pickImageSource(image?.src, fallbackSrc);
     sourceImageRef.current = null;
     ditheredRef.current = null;
     if (!imageSrc) return;
@@ -141,7 +182,7 @@ export function DitherImage({
     return () => {
       cancelled = true;
     };
-  }, [src]);
+  }, [image, src]);
 
   // Process source image whenever controls change.
   useEffect(() => {

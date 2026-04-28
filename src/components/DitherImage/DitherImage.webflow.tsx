@@ -1,12 +1,41 @@
-import { props } from "@webflow/data-types";
+import { PropType, PropValues, props } from "@webflow/data-types";
 import { declareComponent } from "@webflow/react";
 import { DitherImage } from "./DitherImage";
 
-export default declareComponent(DitherImage, {
+type DitherImageWebflowProps = {
+  image?: PropValues[PropType.Image];
+  src?: string;
+  dither?: number;
+  backgroundColor?: string;
+  width?: number;
+};
+
+function DitherImageWebflowComponent({
+  image,
+  src,
+  dither,
+  backgroundColor,
+  width
+}: DitherImageWebflowProps) {
+  return (
+    <DitherImage
+      image={image}
+      src={src}
+      dither={dither}
+      backgroundColor={backgroundColor}
+      width={width}
+    />
+  );
+}
+
+export default declareComponent(DitherImageWebflowComponent, {
   name: "DitherImage",
-  description: "Render an image with Floyd-Steinberg dithering in WebGL.",
+  description: "Render the input image with a bitmap effect in a HTML Canvas",
   group: "Media",
   props: {
+    image: props.Image({
+      name: "Image"
+    }),
     src: props.Text({
       name: "Image URL",
       defaultValue:
